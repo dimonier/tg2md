@@ -55,9 +55,20 @@ def parse_post_photo(post, photo_dir):
     converts photo tag to markdown image link
     '''
 
-    post_photo = '![image]({src})\n\n'.format(src=post['photo'])
+    post_photo = '![image]({src})\n\n'.format(src=post['photo'].split('/')[-1])
 
     return post_photo
+
+
+def parse_post_file(post, photo_dir):
+
+    '''
+    converts any file to markdown file link
+    '''
+
+    post_file = '[[{src}]]\n\n'.format(src=post['file'].split('/')[-1])
+
+    return post_file
 
 
 def text_format(string, fmt):
@@ -183,7 +194,7 @@ def parse_post_media(post, media_dir):
     wraps file links to Obsidian link
     '''
 
-    post_media = '\n![[{src}]]'.format(src=post['file'])
+    post_media = '\n![[{src}]]'.format(src=post['file'].split('/')[-1])
 
     return post_media
 
@@ -210,7 +221,7 @@ def parse_post(post, photo_dir, media_dir):
     post_output += str(parse_post_text(post))
 
     # optional media
-    if 'media_type' in post:
+    if 'file' in post:
         post_output += str(parse_post_media(post, media_dir))
 
     return post_output
@@ -268,7 +279,8 @@ def main():
 
     for post in raw_posts:
         # TODO: handle forwarded posts
-        if post['type'] == 'message' and 'forwarded_from' not in post:
+#        if post['type'] == 'message' and 'forwarded_from' not in post:
+        if post['type'] == 'message':
 
             post_date = datetime.fromisoformat(post['date'])
             post_id = post['id']
