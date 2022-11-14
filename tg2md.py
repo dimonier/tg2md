@@ -155,6 +155,26 @@ def parse_post_text(post):
 
         return post_parsed_text
 
+def parse_post_reply(post):
+
+    '''
+    form a reply header
+    '''
+
+    post_reply = '**{author} replied to [[{orig}|post]]**\n![[{orig}]]\n'.format(orig=post['reply_to_message_id'], author=post['from'])
+
+    return post_reply
+
+def post_header(post):
+
+    '''
+    form a post header
+    '''
+
+    post_header = '**{author}:**\n'.format(author=post['from'])
+
+    return post_header
+
 
 def parse_post_media(post, media_dir):
 
@@ -174,6 +194,12 @@ def parse_post(post, photo_dir, media_dir):
     '''
 
     post_output = ''
+
+    # reply header or normal header
+    if 'reply_to_message_id' in post:
+        post_output += str(parse_post_reply(post))
+    else:
+        post_output += str(post_header(post))
 
     # optional image
     if 'photo' in post:
@@ -246,7 +272,7 @@ def main():
             post_date = datetime.fromisoformat(post['date'])
             post_id = post['id']
             post_author = post['from']
-            post_filename = str(post_date.date()) + '-' + str(post_id) + '.md'
+            post_filename = str(post_id) + '.md'
             post_path = os.path.join(args.out_dir, post_filename)
 
             with open(post_path, 'w', encoding='utf-8') as f:
