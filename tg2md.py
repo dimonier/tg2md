@@ -3,12 +3,13 @@
 # parse.py - converts telegram json to Obsidian md.
 # Copyright (c) 2020, Lev Brekalov
 # Changes from progxaker, 2021
+# Further developed by dimonier, 2022
 
 # TODO summary:
-# - replies
-# - single/muliple tags
-# - forwarded posts
-# - custom post header
+# - [x] replies
+# - [ ] single/muliple tags
+# - [ ] forwarded posts
+# - [ ] custom post header
 
 import os
 import argparse
