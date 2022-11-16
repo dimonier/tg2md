@@ -23,7 +23,10 @@ def simplify_name(name):
     return printable_name
 
 def unlinked_name(name):
-    unlinked_name = name.replace('[', '').replace(']', '')
+    if name:
+        unlinked_name = name.replace('[', '').replace(']', '')
+    else:
+        unlinked_name = ''
 
     return unlinked_name
 
