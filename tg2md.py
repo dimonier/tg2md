@@ -7,6 +7,7 @@
 
 # TODO summary:
 # - [x] replies
+# - [ ] wiki-links and external links
 # - [ ] single/muliple tags
 # - [ ] forwarded posts
 # - [ ] custom post header
@@ -98,7 +99,7 @@ def text_link_format(text, link):
     # convert telegram links to anchors
     # this implies that telegram links are pointing to the same channel
     if link.startswith('https://t.me/c/'):
-        link = '#' + link.split('/')[-1]
+        link = link.split('/')[-1]
     link_fmt = '[{text}]({href})'
     link_fmt = link_fmt.format(text=text.strip(), href=link)
     link_fmt += '\n' * text.count('\n') * text.endswith('\n')
@@ -121,7 +122,11 @@ def parse_text_object(obj):
     elif obj_type == 'text_link':
         return text_link_format(obj_text, obj['href'])
 
-    elif obj_type == 'link' or obj_type == 'email':
+    elif obj_type == 'link':
+        post_link = obj_text
+        return post_link
+
+    elif obj_type == 'email':
         link = obj_text.strip()
         link = 'https://' * (obj_type == 'link') * \
             (1 - link.startswith('https://')) + link
