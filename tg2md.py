@@ -7,7 +7,7 @@
 
 # TODO summary:
 # - [x] replies
-# - [ ] wiki-links and external links
+# - [x] wiki-links and external links
 # - [ ] single/muliple tags
 # - [ ] forwarded posts
 # - [ ] custom post header
@@ -16,6 +16,16 @@ import os
 import argparse
 import json
 from datetime import datetime
+
+def simplify_name(name):
+    printable_name = ''.join(c for c in name if c.isprintable())
+
+    return printable_name
+
+def unlinked_name(name):
+    unlinked_name = name.replace('[', '').replace(']', '')
+
+    return unlinked_name
 
 def print_default_post_header(post_title, post_date, post_author, post_tag):
 
@@ -31,7 +41,6 @@ def print_default_post_header(post_title, post_date, post_author, post_tag):
         'date: {date}\n'\
         'author: {author}\n'\
         'tags: {tag}\n'\
-        'layout: post\n'\
         '---\n'.format(title=post_title, date=post_date, author=post_author, tag=post_tag)
 
     return post_header
@@ -66,8 +75,10 @@ def parse_post_file(post, photo_dir):
     '''
     converts any file to markdown file link
     '''
-
-    post_file = '[[{src}]]\n\n'.format(src=post['file'].split('/')[-1])
+    if post['file'].startswith('(File '):
+        post_file = ''
+    else:
+        post_file = '[[{src}]]\n\n'.format(src=post['file'].split('/')[-1])
 
     return post_file
 
@@ -90,7 +101,7 @@ def text_format(string, fmt):
     return output
 
 
-def text_link_format(text, link):
+def text_link_format(text, link, alias):
 
     '''
     formats links
@@ -98,15 +109,20 @@ def text_link_format(text, link):
 
     # convert telegram links to anchors
     # this implies that telegram links are pointing to the same channel
-    if link.startswith('https://t.me/c/'):
-        link = link.split('/')[-1]
     link_fmt = '[{text}]({href})'
+
+    if link.startswith('https://t.me') and len(link.split('/')) > 2:
+        if link.split('/')[-2] in alias:
+            link = link.split('/')[-1]
+            link_fmt = '[[{href}|{text}]]'
+
     link_fmt = link_fmt.format(text=text.strip(), href=link)
     link_fmt += '\n' * text.count('\n') * text.endswith('\n')
+
     return link_fmt
 
 
-def parse_text_object(obj):
+def parse_text_object(obj, alias):
 
     '''
     detects type of text object and wraps it in corresponding formatting
@@ -120,10 +136,14 @@ def parse_text_object(obj):
         return post_tag
 
     elif obj_type == 'text_link':
-        return text_link_format(obj_text, obj['href'])
+        return text_link_format(obj_text, obj['href'], alias)
 
     elif obj_type == 'link':
         post_link = obj_text
+        if obj_text.startswith('https://t.me') and len(obj_text.split('/')) > 2:
+            if obj_text.split('/')[-2] in alias:
+                post_link = '[[' + obj_text.split('/')[-1] + ']]'
+        # print(obj_text, '->', post_link)
         return post_link
 
     elif obj_type == 'email':
@@ -155,7 +175,7 @@ def parse_text_object(obj):
         return text_format(obj_text, 's')
 
 
-def parse_post_text(post):
+def parse_post_text(post, alias):
     # TODO: handle reply-to
     post_raw_text = post['text']
     post_parsed_text = ''
@@ -168,7 +188,7 @@ def parse_post_text(post):
             if type(obj) == str:
                 post_parsed_text += obj
             else:
-                post_parsed_text += str(parse_text_object(obj))
+                post_parsed_text += str(parse_text_object(obj, alias))
 
         return post_parsed_text
 
@@ -178,7 +198,7 @@ def parse_post_reply(post):
     form a reply header
     '''
 
-    post_reply = '**{author} replied to [[{orig}|post]]**\n![[{orig}]]\n'.format(orig=post['reply_to_message_id'], author=post['from'])
+    post_reply = '**{author} replied to [[{orig}|post]]**\n![[{orig}]]\n'.format(orig=post['reply_to_message_id'], author=unlinked_name(post['from']))
 
     return post_reply
 
@@ -188,23 +208,25 @@ def post_header(post):
     form a post header
     '''
 
-    post_header = '**{author}:**\n'.format(author=post['from'])
+    post_header = '**{author}:**\n'.format(author=unlinked_name(post['from']))
 
     return post_header
 
 
-def parse_post_media(post, media_dir):
+def parse_post_media(post, media_dir, alias):
 
     '''
     wraps file links to Obsidian link
     '''
-
-    post_media = '\n![[{src}]]'.format(src=post['file'].split('/')[-1])
+    if post['file'].startswith('(File '):
+        post_media = ''
+    else:
+        post_media = '\n![[{src}]]'.format(src=post['file'].split('/')[-1])
 
     return post_media
 
 
-def parse_post(post, photo_dir, media_dir):
+def parse_post(post, photo_dir, media_dir, alias):
 
     '''
     converts post object to formatted text
@@ -223,11 +245,11 @@ def parse_post(post, photo_dir, media_dir):
         post_output += str(parse_post_photo(post, photo_dir))
 
     # post text
-    post_output += str(parse_post_text(post))
+    post_output += str(parse_post_text(post, alias))
 
     # optional media
     if 'file' in post:
-        post_output += str(parse_post_media(post, media_dir))
+        post_output += str(parse_post_media(post, media_dir, alias))
 
     return post_output
 
@@ -237,15 +259,20 @@ def main():
     parser = argparse.ArgumentParser(
             usage='%(prog)s [options] json_file',
             description='Convert exported Telegram channel data json to \
-                    bunch of markdown posts ready to use with Obsidian')
+                    bunch of Markdown posts ready to use with Obsidian')
     parser.add_argument(
             'json', metavar='json_file',
-            help='result.json file from telegram export')
+            help='result.json file from Telegram export')
+    parser.add_argument(
+            '--alias', metavar='alias',
+            nargs='?', default='',
+            help='channel or group alias. Used for correct linking \
+                    of posts (default: None')
     parser.add_argument(
             '--out-dir', metavar='out_dir',
-            nargs='?', default='formatted_posts',
-            help='output directory for markdown files\
-                    (default: formatted_posts)')
+            nargs='?', default='posts',
+            help='output directory for Obsidian Markdown files\
+                    (default: posts)')
     parser.add_argument(
             '--photo-dir', metavar='photo_dir',
             nargs='?', default='photos',
@@ -279,6 +306,12 @@ def main():
     except FileNotFoundError:
         sys.exit('result.json not found.\nPlease, specify right file')
 
+    # list channel/group aliases used in links
+    alias = [data['id']]
+    # print(type(args.alias))
+    if args.alias: alias.append(args.alias)
+    # print('Aliases', alias)
+
     # load only messages
     raw_posts = data['messages']
 
@@ -289,14 +322,15 @@ def main():
 
             post_date = datetime.fromisoformat(post['date'])
             post_id = post['id']
-            post_author = post['from']
+            post_author = unlinked_name(post['from'])
+            post_nametag = simplify_name(unlinked_name(post_author)).replace(' ', '_')
             post_filename = str(post_id) + '.md'
             post_path = os.path.join(args.out_dir, post_filename)
 
             with open(post_path, 'w', encoding='utf-8') as f:
                 print(print_default_post_header(
-                    post_id, post_date, post_author, None), file=f)
-                print(parse_post(post, args.photo_dir, args.media_dir), file=f)
+                    post_id, post_date, post_author, post_nametag), file=f)
+                print(parse_post(post, args.photo_dir, args.media_dir, alias), file=f)
 
 
 if __name__ == '__main__':
