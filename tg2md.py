@@ -6,8 +6,11 @@
 # Further developed by dimonier, 2022
 
 # TODO summary:
-# - [x] replies
+# - [x] replies (prev post transcluded)
 # - [x] wiki-links and external links
+# - [x] links to original telegram posts
+# - [x] post author tag for groups
+# - [x] `yyyy-mm` subfolders to output posts folder
 # - [ ] single/muliple tags
 # - [ ] forwarded posts
 # - [ ] custom post header
@@ -195,23 +198,23 @@ def parse_post_text(post, alias):
 
         return post_parsed_text
 
-def parse_post_reply(post):
+def parse_post_reply(post, alias):
 
     '''
     form a reply header
     '''
 
-    post_reply = '**{author} replied to [[{orig}|post]]**\n![[{orig}]]\n'.format(orig=post['reply_to_message_id'], author=unlinked_name(post['from']))
+    post_reply = '**{author} [replied](https://t.me/{alias}/{id}) to [[{orig}|post]]**\n![[{orig}]]\n'.format(alias = alias[-1], id = post['id'], orig=post['reply_to_message_id'], author=unlinked_name(post['from']))
 
     return post_reply
 
-def post_header(post):
+def post_header(post, alias):
 
     '''
     form a post header
     '''
 
-    post_header = '**{author}:**\n'.format(author=unlinked_name(post['from']))
+    post_header = '**{author} [wrote](https://t.me/{alias}/{id}):**\n'.format(alias = alias[-1], id = post['id'], author=unlinked_name(post['from']))
 
     return post_header
 
@@ -239,9 +242,9 @@ def parse_post(post, photo_dir, media_dir, alias):
 
     # reply header or normal header
     if 'reply_to_message_id' in post:
-        post_output += str(parse_post_reply(post))
+        post_output += str(parse_post_reply(post, alias))
     else:
-        post_output += str(post_header(post))
+        post_output += str(post_header(post, alias))
 
     # optional image
     if 'photo' in post:
@@ -315,8 +318,11 @@ def main():
     if args.alias: alias.append(args.alias)
     # print('Aliases', alias)
 
+    lastmonth = ''
+
     # load only messages
     raw_posts = data['messages']
+    print('Processing', len(raw_posts), 'posts in', alias[-1])
 
     for post in raw_posts:
         # TODO: handle forwarded posts
@@ -326,9 +332,23 @@ def main():
             post_date = datetime.fromisoformat(post['date'])
             post_id = post['id']
             post_author = unlinked_name(post['from'])
-            post_nametag = simplify_name(unlinked_name(post_author)).replace(' ', '_')
+            if 'channel' in data['type']:
+                post_nametag = ''
+            else:
+                post_nametag = simplify_name(unlinked_name(post_author)).replace(' ', '_')
             post_filename = str(post_id) + '.md'
-            post_path = os.path.join(args.out_dir, post_filename)
+            post_subpath = str(post_date)[0:7]
+
+            try:
+                os.mkdir(os.path.join(args.out_dir, post_subpath))
+            except FileExistsError:
+                pass
+
+            if post_subpath != lastmonth:
+                lastmonth = post_subpath
+                print(lastmonth)
+
+            post_path = os.path.join(args.out_dir, post_subpath, post_filename)
 
             with open(post_path, 'w', encoding='utf-8') as f:
                 print(print_default_post_header(

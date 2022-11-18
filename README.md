@@ -52,7 +52,11 @@ markdown files. This actually does not make sense for Obsidian and will be remov
 
 ## todo
 
-- external links to original telegram posts
-- add `yyyy-mm` subfolders to output posts folder
-- single/muliple tags
-- forwarded posts
+- [x] replies (prev post transcluded)
+- [x] wiki-links and external links
+- [x] links to original Telegram posts
+- [x] post author tag for groups
+- [x] `yyyy-mm` subfolders to output posts folder
+- [ ] single/muliple tags
+- [ ] forwarded posts
+- [ ] custom post header
