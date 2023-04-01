@@ -6,7 +6,7 @@ a Markdown file.
 Telegram Desktop creates JSON file, as well as different directories containing
 multimedia, photos, etc. This script creates new directory and populates it with
 formatted posts. As a result, the folder containing original media subfolders
-and this newly created formatted posts folder could be opened in Obsidian as a vault.
+and this newly created formatted posts folder could be opened in [Obsidian](https://obsidian.md) as a vault.
 
 In Obsidian, all links between the channel/group posts are converted to wiki links,
 all photos and other media display embedded in pages like in Telegram.
