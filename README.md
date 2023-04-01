@@ -1,4 +1,4 @@
-# tg2md
+# Python script to convert Telegram chat export to Obsidian vault
 
 This script parses output from Telegram channel or group and converts each post to
 a Markdown file.
@@ -11,9 +11,9 @@ and this newly created formatted posts folder could be opened in Obsidian as a v
 In Obsidian, all links between the channel/group posts are converted to wiki links,
 all photos and other media display embedded in pages like in Telegram.
 
-## easy usage on Windows
+## Easy usage on Windows
 
-### For chats with alias
+### For chat with alias
 I.e. for chats where links to messages look like https://t.me/samuprav/342
 
 1. Put `tg2md.py` and `tg2md-link_alias.bat` to the same folder where `result.json` and other exported stuff resides.
@@ -22,7 +22,7 @@ I.e. for chats where links to messages look like https://t.me/samuprav/342
 4. Check the result by opening the folder as vault in Obsidian.
 5. If the result is OK for you and links inside the vault work fine, delete `tg2md-link_alias.bat`, `tg2md.py`, and `result.json`.
 
-### For private chats or chats without alias
+### For private chat or chat without alias
 
 I.e. for chats where links to messages look like https://t.me/c/5345344532/342
 
@@ -31,7 +31,7 @@ I.e. for chats where links to messages look like https://t.me/c/5345344532/342
 3. Check the result by opening the folder as vault in Obsidian.
 4. If the result is OK for you and links inside the vault work fine, delete `tg2md-link_alias.bat`, `tg2md.py`, and `result.json`.
 
-## basic usage
+## Basic usage
 
 Firstly you need to export your channel history from Telegram Desktop app.
 This could be done from three dots menu. Then popup menu appears, where
@@ -70,13 +70,13 @@ of default `photos` and `files` by specifying them with `--photo-dir` and
 `--media-dir` parameters respectively. Note that they only change links in the
 markdown files. This actually does not make sense for Obsidian and will be removed.
 
-## todo
+## Todo
 
 - [x] replies (prev post transcluded)
 - [x] wiki-links and external links
 - [x] links to original Telegram posts
 - [x] post author tag for groups
 - [x] `yyyy-mm` subfolders to output posts folder
+- [x] forwarded posts
 - [ ] single/muliple tags
-- [ ] forwarded posts
 - [ ] custom post header
