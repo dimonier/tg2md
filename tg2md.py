@@ -11,8 +11,8 @@
 # - [x] links to original telegram posts
 # - [x] post author tag for groups
 # - [x] `yyyy-mm` subfolders to output posts folder
+# - [x] forwarded posts
 # - [ ] single/muliple tags
-# - [ ] forwarded posts
 # - [ ] custom post header
 
 import os
@@ -313,7 +313,7 @@ def main():
         sys.exit('result.json not found.\nPlease, specify right file')
 
     # list channel/group aliases used in links
-    alias = [data['id']]
+    alias = [f'c/{data["id"]}']
     # print(type(args.alias))
     if args.alias: alias.append(args.alias)
     # print('Aliases', alias)
