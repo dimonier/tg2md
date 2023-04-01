@@ -11,8 +11,8 @@
 # - [x] links to original telegram posts
 # - [x] post author tag for groups
 # - [x] `yyyy-mm` subfolders to output posts folder
+# - [x] forwarded posts
 # - [ ] single/muliple tags
-# - [ ] forwarded posts
 # - [ ] custom post header
 
 import os
