@@ -11,6 +11,26 @@ and this newly created formatted posts folder could be opened in Obsidian as a v
 In Obsidian, all links between the channel/group posts are converted to wiki links,
 all photos and other media display embedded in pages like in Telegram.
 
+## easy usage on Windows
+
+### For chats with alias
+I.e. for chats where links to messages look like https://t.me/samuprav/342
+
+1. Put `tg2md.py` and `tg2md-link_alias.bat` to the same folder where `result.json` and other exported stuff resides.
+2. Edit `tg2md-link_alias.bat` and replace `<chat_alias>` with actual chat alias (like `samuprav` in the example above).
+3. Run `tg2md-link_alias.bat`. `posts` subfolder containing posts will be created by the script.
+4. Check the result by opening the folder as vault in Obsidian.
+5. If the result is OK for you and links inside the vault work fine, delete `tg2md-link_alias.bat`, `tg2md.py`, and `result.json`.
+
+### For private chats or chats without alias
+
+I.e. for chats where links to messages look like https://t.me/c/5345344532/342
+
+1. Put `tg2md.py` and `tg2md.bat` to the same folder where result.json and other exported stuff resides.
+2. Run `tg2md.py`.  `posts` subfolder containing posts will be created by the script.
+3. Check the result by opening the folder as vault in Obsidian.
+4. If the result is OK for you and links inside the vault work fine, delete `tg2md-link_alias.bat`, `tg2md.py`, and `result.json`.
+
 ## basic usage
 
 Firstly you need to export your channel history from Telegram Desktop app.
